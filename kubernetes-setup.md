@@ -127,13 +127,13 @@ k3sup join \
   --k3s-extra-args '--flannel-backend=none --disable-network-policy'
 ```
 
-5. So now we have a single cluster in one region we can now move on to the deployment of [k3s](https://github.com/k3s-io/k3s) to our second region. The command below is similar to the command is step two but we need to ensure we use the Public IP of the first node in our second region. 
-Deploy Second k3s cluster
-Retrieve the Public IP address of the first node in region two
+5. So now we have a single cluster in one region we can now move on to the deployment of [k3s](https://github.com/k3s-io/k3s) to our third region. 
+Deploy Third k3s cluster
+Retrieve the Public IP address of the first node in region three.
 ```
 MASTERR3=$(az vm show -d -g $rg  -n crdb-$loc3-node1 --query publicIps -o tsv)
 ```
-Now use [k3sup](https://github.com/alexellis/k3sup) to create the second Kubernetes cluster.
+Now use [k3sup](https://github.com/alexellis/k3sup) to create the third Kubernetes cluster.
 ```
 k3sup install \
   --ip=$MASTERR3 \
@@ -231,13 +231,16 @@ You are able to check the progress by using the commands below.
 ```
 cilium clustermesh status --context $clus1 --wait
 cilium clustermesh status --context $clus2 --wait
-cilium clustermesh status --context $clus2 --wait
+cilium clustermesh status --context $clus3 --wait
 ```
 
 10. Once the mesh is established you can connect the two clusters together.
 
 ```
 cilium clustermesh connect --context $clus1 --destination-context $clus2
+cilium clustermesh connect --context $clus2 --destination-context $clus3
+cilium clustermesh connect --context $clus1 --destination-context $clus3
+
 ```
 
 Now you are ready to move to the next step. [Pod Network test](network-test.md)

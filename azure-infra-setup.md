@@ -6,10 +6,10 @@ Description: Setting up and configuring all the required infrastructure to suppo
 
 ```bash
 export vm_type="Standard_DS2_v2"
-export rg="crdb-k3s-multi-region"
-export clus1="crdb-k3s-eastus"
-export clus2="crdb-k3s-westus"
-export clus3="crdb-k3s-northeurope"
+export rg="crdb-cilium-multi-region"
+export clus1="crdb-cilium-eastus"
+export clus2="crdb-cilium-westus"
+export clus3="crdb-cilium-northeurope"
 export loc1="eastus"
 export loc2="westus"
 export loc3="northeurope"

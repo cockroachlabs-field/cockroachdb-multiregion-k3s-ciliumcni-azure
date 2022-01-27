@@ -116,6 +116,12 @@ kubectl create -f https://raw.githubusercontent.com/cockroachdb/cockroach/master
 kubectl exec -it cockroachdb-client-secure -n $loc1 -- ./cockroach sql --certs-dir=/cockroach-certs --host=cockroachdb-public
 ```
 
+```
+CREATE USER cockroach WITH PASSWORD 'cockroach';
+GRANT admin TO cockroach;
+```
+
+
 10. Port forward the admin ui
 
 ```bash
