@@ -24,11 +24,11 @@ kubectl config get-contexts
 
 At the top of the `setup.py` script, fill in the `contexts` map with the zones of your clusters and their "context" names, e.g.:
 
-> `contexts = { 'eastus': 'crdb-k3s-eastus', 'westus': 'crdb-k3s-westus',}`
+> `contexts = { 'eastus': 'crdb-k3s-eastus', 'westus': 'crdb-k3s-westus', 'northeurpoe': 'crdb-k3s-northeurope',}`
 
 3. In the `setup.py` script, fill in the `regions` map with the zones and corresponding regions of your clusters, for example:
 
-> `regions = { 'eastus': 'eastus', 'westus': 'eastus',}`
+> `regions = { 'eastus': 'eastus', 'westus': 'westus', 'northeurope': 'northeurope',}`
 
 Setting `regions` is optional, but recommended, because it improves CockroachDB's ability to diversify data placement if you use more than one zone in the same region. If you aren't specifying regions, just leave the map empty.
 

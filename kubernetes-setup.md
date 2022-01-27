@@ -127,6 +127,63 @@ k3sup join \
   --k3s-extra-args '--flannel-backend=none --disable-network-policy'
 ```
 
+5. So now we have a single cluster in one region we can now move on to the deployment of [k3s](https://github.com/k3s-io/k3s) to our second region. The command below is similar to the command is step two but we need to ensure we use the Public IP of the first node in our second region. 
+Deploy Second k3s cluster
+Retrieve the Public IP address of the first node in region two
+```
+MASTERR3=$(az vm show -d -g $rg  -n crdb-$loc3-node1 --query publicIps -o tsv)
+```
+Now use [k3sup](https://github.com/alexellis/k3sup) to create the second Kubernetes cluster.
+```
+k3sup install \
+  --ip=$MASTERR3 \
+  --user=ubuntu \
+  --sudo \
+  --cluster \
+  --k3s-channel=stable \
+  --k3s-extra-args '--flannel-backend none --disable-network-policy' \
+  --merge \
+  --local-path $HOME/.kube/config \
+  --context=$clus3
+```
+Next you can add the agent nodes to the [k3s](https://github.com/k3s-io/k3s) This will be where are workloads are ran from. In this example we are going to add two agents.
+Obtain the Public IP address of the second node.
+```
+AGENT1R3=$(az vm show -d -g $rg  -n crdb-$loc3-node2 --query publicIps -o tsv)
+```
+Now use [k3sup](https://github.com/alexellis/k3sup) to add the node to the existing cluster.
+```
+k3sup join \
+  --ip $AGENT1R3 \
+  --user ubuntu \
+  --sudo \
+  --k3s-channel stable \
+  --server \
+  --server-ip $MASTERR3 \
+  --server-user ubuntu \
+  --sudo \
+  --k3s-extra-args '--flannel-backend=none --disable-network-policy'
+```
+Repeat this for the third node.
+
+Obtain the Public IP address of the third node.
+```
+AGENT2R3=$(az vm show -d -g $rg  -n crdb-$loc3-node3 --query publicIps -o tsv)
+```
+Now use [k3sup](https://github.com/alexellis/k3sup) to add the node to the existing cluster.
+```
+k3sup join \
+  --ip $AGENT2R3 \
+  --user ubuntu \
+  --sudo \
+  --k3s-channel stable \
+  --server \
+  --server-ip $MASTERR2 \
+  --server-user ubuntu \
+  --sudo \
+  --k3s-extra-args '--flannel-backend=none --disable-network-policy'
+```
+
 5. Install the latest version of the Cilium CLI. The Cilium CLI can be used to install Cilium, inspect the state of a Cilium installation, and enable/disable various features (e.g. clustermesh, Hubble).
 ```
 curl -L --remote-name-all https://github.com/cilium/cilium-cli/releases/latest/download/cilium-linux-amd64.tar.gz{,.sha256sum}
@@ -140,12 +197,14 @@ rm cilium-linux-amd64.tar.gz{,.sha256sum}
 kubectl config use-context $clus1
 cilium install --config cluster-pool-ipv4-cidr=10.10.0.0/16 --cluster-name=$clus1 --cluster-id=1
 ```
-7. We need to no repeat this process for our second [k3s](https://github.com/k3s-io/k3s) cluster. If you are planning to run Hubble Relay across clusters, it is best to share a certificate authority (CA) between the clusters as it will enable mTLS across clusters to just work. We can do this by simply propagate the Kubernetes secret containing the CA from one cluster to the other.
+7. We need to now repeat this process for our second [k3s](https://github.com/k3s-io/k3s) cluster. If you are planning to run Hubble Relay across clusters, it is best to share a certificate authority (CA) between the clusters as it will enable mTLS across clusters to just work. We can do this by simply propagate the Kubernetes secret containing the CA from one cluster to the other.
 
 ```
 kubectl config use-context $clus1
 kubectl get secret cilium-ca -n kube-system -o yaml > cilium-ca.yaml
 kubectl config use-context $clus2
+kubectl create -f cilium-ca.yaml
+kubectl config use-context $clus3
 kubectl create -f cilium-ca.yaml
 ```
 
@@ -154,7 +213,10 @@ kubectl create -f cilium-ca.yaml
 >Note: Pay attention here to the different cidr that has been used form the first cluster. Cluster must not have overlappping address space for the Pod network
 
 ```
+kubectl config use-context $clus2
 cilium install --config cluster-pool-ipv4-cidr=10.11.0.0/16 --cluster-name=$clus2 --cluster-id=2 
+kubectl config use-context $clus3
+cilium install --config cluster-pool-ipv4-cidr=10.12.0.0/16 --cluster-name=$clus3 --cluster-id=3 
 ```
 
 9. Cilium Cluster Mesh is a way to build a mesh of Kubernetes clusters. By connecting clusters together you enable pod-to-pod connectivity across all clusters, define global services to load-balance between clusters and enforce security policies to restrict access. To enable this feature run the two commands below for your host workstation.
@@ -162,11 +224,13 @@ cilium install --config cluster-pool-ipv4-cidr=10.11.0.0/16 --cluster-name=$clus
 ```
 cilium clustermesh enable --context $clus1 --service-type LoadBalancer
 cilium clustermesh enable --context $clus2 --service-type LoadBalancer
+cilium clustermesh enable --context $clus3 --service-type LoadBalancer
 ```
 You are able to check the progress by using the commands below.
 
 ```
 cilium clustermesh status --context $clus1 --wait
+cilium clustermesh status --context $clus2 --wait
 cilium clustermesh status --context $clus2 --wait
 ```
 
@@ -175,6 +239,7 @@ cilium clustermesh status --context $clus2 --wait
 ```
 cilium clustermesh connect --context $clus1 --destination-context $clus2
 ```
-Now you are ready to move to the next step. [Region Three Virtual Machine setup.](vm-setup.md)
+
+Now you are ready to move to the next step. [Pod Network test](network-test.md)
 
 [Back](README.md)
