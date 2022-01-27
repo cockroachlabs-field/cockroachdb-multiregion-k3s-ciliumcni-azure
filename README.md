@@ -36,7 +36,7 @@ To complete this demo you will already need the following.
 Below is a high-level architecture diagram to show how the three regions are connected. In this solution we will be using the Cilium CNI (Container Network Interface) for Kubernetes to provide the required networking to connect our two k3s Kubernetes clusters and our three virtual machines. All regions need to have none overlapping address space along with the pod networks in our k3s Kubernetes clusters also not having overlapping address space. This is to ensure that routing is possible without any issues. All of the three regions need to be peered together to allow for communication between the pods in Kubernetes and the Virtual Machines in the thirds region.
 
 
-![Architecture Diagram][architecture.jpg]
+![Architecture Diagram](architecture.jpg)
 
 Cilium's multi-cluster implementation in a nutshell, ClusterMesh provides:
 - Pod IP routing across multiple Kubernetes clusters at native performance via tunneling or direct-routing without requiring any gateways or proxies.
