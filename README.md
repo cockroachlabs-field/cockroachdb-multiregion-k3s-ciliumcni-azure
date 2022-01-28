@@ -33,7 +33,7 @@ To complete this demo you will already need the following.
 Below is a high-level architecture diagram to show how the three regions are connected. In this solution we will be using the Cilium CNI (Container Network Interface) for Kubernetes to provide the required networking to connect our three k3s Kubernetes clusters. All regions need to have none overlapping address space along with the pod networks in our k3s Kubernetes clusters also not having overlapping address space. This is to ensure that routing is possible without any issues. All of the three regions need to be peered together to allow for communication between the pods in Kubernetes in all three regions.
 
 
-![Architecture Diagram](architecture.jpg)
+![Architecture Diagram](crdb-cilium-architecture.png)
 
 Cilium's multi-cluster implementation in a nutshell, ClusterMesh provides:
 - Pod IP routing across multiple Kubernetes clusters at native performance via tunneling or direct-routing without requiring any gateways or proxies.
@@ -52,6 +52,12 @@ To complete this demo there are a number of steps. These are listed below.
 1. [CockroachDB setup](cockroach-setup.md)
 
 ## Clean Up
+
+First update the 'teardown.py' script with you kubernetes contexts as we did in the 'setup.py'. Once you have done this run the script. This  is will tidy up your folder and remove any certificates for this deployment we no longer need.
+
+```
+python teardown.py
+```
 
 Creating resources in Azure costs money, so make sure you delete the Resource Group once you’re finished.
 ```

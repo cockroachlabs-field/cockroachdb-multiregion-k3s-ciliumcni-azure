@@ -178,7 +178,7 @@ k3sup join \
   --sudo \
   --k3s-channel stable \
   --server \
-  --server-ip $MASTERR2 \
+  --server-ip $MASTERR3 \
   --server-user ubuntu \
   --sudo \
   --k3s-extra-args '--flannel-backend=none --disable-network-policy'
@@ -197,7 +197,7 @@ rm cilium-linux-amd64.tar.gz{,.sha256sum}
 kubectl config use-context $clus1
 cilium install --config cluster-pool-ipv4-cidr=10.10.0.0/16 --cluster-name=$clus1 --cluster-id=1
 ```
-7. We need to now repeat this process for our second [k3s](https://github.com/k3s-io/k3s) cluster. If you are planning to run Hubble Relay across clusters, it is best to share a certificate authority (CA) between the clusters as it will enable mTLS across clusters to just work. We can do this by simply propagate the Kubernetes secret containing the CA from one cluster to the other.
+7. We need to now repeat this process for remaining [k3s](https://github.com/k3s-io/k3s) clusters. If you are planning to run Hubble Relay across clusters, it is best to share a certificate authority (CA) between the clusters as it will enable mTLS across clusters to just work. We can do this by simply propagate the Kubernetes secret containing the CA from one cluster to the other.
 
 ```
 kubectl config use-context $clus1
@@ -208,7 +208,7 @@ kubectl config use-context $clus3
 kubectl create -f cilium-ca.yaml
 ```
 
-8. Perform the install of the Cilium CNI on the second k3s](https://github.com/k3s-io/k3s) cluster.
+8. Perform the install of the Cilium CNI on the remaining [k3s](https://github.com/k3s-io/k3s) clusters.
 
 >Note: Pay attention here to the different cidr that has been used form the first cluster. Cluster must not have overlappping address space for the Pod network
 
