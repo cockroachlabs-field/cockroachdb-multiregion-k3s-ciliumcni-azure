@@ -1,15 +1,18 @@
 
 # CockroachDB Azure Multi Region Demo with k3s and CiliumCNI Clustermesh (Manual)
 
-In this demo you will deploy CockroachDB across three Azure Regions. Two regions will be running a K3s Kubernetes Cluster and the third region will be three virtual machines. This is to demonstrate the flexibility that can be achieved in a variety of deployments scenarios.
+In this demo you will deploy CockroachDB across three Azure Regions. A single Virtual Network will be deployed in each of the regions with VNet Peering in place between each of the Virtual Networks. Nine virtual machines will then be deployed across Azure, three in each region.
+
+All three regions will be using [k3s](https://k3s.io/) as the Kubernetes distribution, the [k3s](https://k3s.io/) default Container Network Interface (CNI) of flannel will disabled in favor Cilium. One of the requirements to run CockroachDB in Kubernetes is network connectivity between the pods in all of the clusters. Out of the box in a typical multi-cluster deployment this type of connectivity may not be available, with the pod networks isolated to each cluster. By adopting Cilium as the CNI we can take advantage of the Cluster Mesh capability which creates network connectivity between all of the configured clusters. This demonstrates one deployment pattern that can be used for a deployment of CockroachDB in a multi-region or multi-cloud deployment.
 
 ## Requirements
 
 This solution will deliver the following requirements.
 
-- Deploy a Multi Region CockroachDB solution in Azure.
-- Three regions in Kubernetes.
+- The required infrastructure across the three regions in Azure.
+- Deploy [k3s](https://k3s.io/) Kubernetes to all three regions using the CLI tool k3sup.
 - Cilium will be deployed as the Kubernetes Container Network Interface (CNI)
+- CockroachDB is deployed as a stateful set in to each cluster.
 
 ## Prerequisites 
 
@@ -22,15 +25,17 @@ To complete this demo you will already need the following.
 
 ## Network Security Rules
 
+This demo will create the following security rules in each region. In your own deployment please consider updating the rules source to just your host IP address. This will tighten the security a great deal. This is a demo and should be built upon fro any production deployment.
+
 |Source|Destination|Port Number|
 |------|-----------|-----------|
-|Host Workstation|Kubernetes API|6443|
-|Host Workstation |SSH Access to Each VM|22|
+|*|Kubernetes API|6443|
+|*|SSH Access to Each VM|22|
 |*|NodePort Access|30000-32767|
 
 ## Architecture
 
-Below is a high-level architecture diagram to show how the three regions are connected. In this solution we will be using the Cilium CNI (Container Network Interface) for Kubernetes to provide the required networking to connect our three k3s Kubernetes clusters. All regions need to have none overlapping address space along with the pod networks in our k3s Kubernetes clusters also not having overlapping address space. This is to ensure that routing is possible without any issues. All of the three regions need to be peered together to allow for communication between the pods in Kubernetes in all three regions.
+Below is a high-level architecture diagram to show how the three regions are connected. In this solution we will be using the Cilium CNI (Container Network Interface) for Kubernetes to provide the required networking to connect our three [k3s](https://k3s.io/) Kubernetes clusters. All regions need to have none overlapping address space along with the pod networks in our [k3s](https://k3s.io/) Kubernetes clusters also not having overlapping address space. This is to ensure that routing is possible without any issues. All of the three regions need to be peered together to allow for communication between the pods in Kubernetes in all three regions.
 
 
 ![Architecture Diagram](crdb-cilium-architecture.png)
